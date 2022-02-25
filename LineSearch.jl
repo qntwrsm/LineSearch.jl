@@ -14,6 +14,8 @@ module LineSearch
 using LinearAlgebra
 
 export
+    # Structs
+    BackTrack, 
     # Backtracking
     backtrack!
 
