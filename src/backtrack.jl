@@ -23,7 +23,7 @@ Base.@kwdef mutable struct BackTrack{Tf, Gf, Ti}
 end
 
 """
-    fixed!(ls, x, x_prev, p, f_prev, ∇f_prev, f, args)
+    fixed!(ls, x, x_prev, p, f_prev, ∇f_prev, f)
 
 Backtracking line search wtih a fixed contraction parameter ``ρ`` to find ``α``,
 storing the result in `x`.
@@ -35,7 +35,6 @@ storing the result in `x`.
   - `f_prev::Real`              : previous objective function value
   - `∇f_prev::AbstractVector`   : previous gradient
   - `f::Function`               : ``f(x)``
-  - `args::NamedTuple`          : arguments for `f`
 
 #### Returns
   - `x::AbstractVector` : updated state
@@ -43,7 +42,7 @@ storing the result in `x`.
 """
 function fixed!(ls::BackTrack, x::AbstractVector, x_prev::AbstractVector, 
                 p::AbstractVector, f_prev::Real, ∇f_prev::AbstractVector, 
-                f::Function, args::NamedTuple)
+                f::Function)
     # Unpack
     α= ls.α_init
     c_1= ls.c_1
@@ -51,8 +50,8 @@ function fixed!(ls::BackTrack, x::AbstractVector, x_prev::AbstractVector,
     max_iter= ls.max_iter
     
     # Objective function
-    @. x= x_prev + α * p
-    f_new= f(x, args.f...)
+    x.= x_prev .+ α .* p
+    f_new= f(x)
 
     # Directional derivative
     d= dot(∇f_prev, p)
@@ -65,8 +64,8 @@ function fixed!(ls::BackTrack, x::AbstractVector, x_prev::AbstractVector,
         α*= ρ
 
         # Update objective function
-        @. x= x_prev + α * p
-        f_new= f(x, args.f...)
+        x.= x_prev .+ α .* p
+        f_new= f(x)
 
         # Update iteration counter
         iter+= 1
@@ -79,7 +78,7 @@ function fixed!(ls::BackTrack, x::AbstractVector, x_prev::AbstractVector,
 end
 
 """
-    quad_interp!(ls, x, x_prev, p, f_prev, ∇f_prev, f, args)
+    quad_interp!(ls, x, x_prev, p, f_prev, ∇f_prev, f)
 
 Backtracking line search wtih  quadratic interpolation to find ``α``, storing
 the result in `x`.
@@ -91,7 +90,6 @@ the result in `x`.
   - `f_prev::Real`              : previous objective function value
   - `∇f_prev::AbstractVector`   : previous gradient
   - `f::Function`               : ``f(x)``
-  - `args::NamedTuple`          : arguments for `f`
 
 #### Returns
   - `x::AbstractVector` : updated state
@@ -99,7 +97,7 @@ the result in `x`.
 """
 function quad_interp!(ls::BackTrack, x::AbstractVector, x_prev::AbstractVector, 
                         p::AbstractVector, f_prev::Real, ∇f_prev::AbstractVector, 
-                        f::Function, args::NamedTuple)
+                        f::Function)
     # Unpack
     α_1= ls.α_init
     c_1= ls.c_1
@@ -107,8 +105,8 @@ function quad_interp!(ls::BackTrack, x::AbstractVector, x_prev::AbstractVector,
     max_iter= ls.max_iter
 
     # Objective function
-    @. x= x_prev + α_1 * p
-    f_new= f(x, args.f...)
+    x.= x_prev .+ α_1 .* p
+    f_new= f(x)
 
     # Directional derivative
     d= dot(∇f_prev, p)
@@ -125,8 +123,8 @@ function quad_interp!(ls::BackTrack, x::AbstractVector, x_prev::AbstractVector,
         α_1= max(α_tmp, ρ_lo * α_1) # avoid too big reductions
 
         # Update objective function
-        @. x= x_prev + α_1 * p
-        f_new= f(x, args.f...)
+        x.= x_prev .+ α_1 .* p
+        f_new= f(x)
 
         # Update iteration counter
         iter+= 1
@@ -139,7 +137,7 @@ function quad_interp!(ls::BackTrack, x::AbstractVector, x_prev::AbstractVector,
 end
 
 """
-    cubic_interp!(ls, x, x_prev, p, f_prev, ∇f_prev, f, args)
+    cubic_interp!(ls, x, x_prev, p, f_prev, ∇f_prev, f)
 
 Backtracking line search wtih cubic interpolation to find ``α``, storing the
 result in `x`.
@@ -151,7 +149,6 @@ result in `x`.
   - `f_prev::Real`              : previous objective function value
   - `∇f_prev::AbstractVector`   : previous gradient
   - `f::Function`               : ``f(x)``
-  - `args::NamedTuple`          : arguments for `f`
 
 #### Returns
   - `x::AbstractVector` : updated state
@@ -159,7 +156,7 @@ result in `x`.
 """
 function cubic_interp!(ls::BackTrack, x::AbstractVector, x_prev::AbstractVector, 
                         p::AbstractVector, f_prev::Real, ∇f_prev::AbstractVector, 
-                        f::Function, args::NamedTuple)
+                        f::Function)
     # Infer type
     Tα= typeof(ls.α_init)
 
@@ -170,8 +167,8 @@ function cubic_interp!(ls::BackTrack, x::AbstractVector, x_prev::AbstractVector,
     max_iter= ls.max_iter
 
     # Objective function values
-    @. x= x_prev + α_2 * p
-    f_new= f(x, args.f...)
+    x.= x_prev .+ α_2 .* p
+    f_new= f(x)
     f_tmp= f_new
 
     # Directional derivative
@@ -211,8 +208,8 @@ function cubic_interp!(ls::BackTrack, x::AbstractVector, x_prev::AbstractVector,
         α_2= max(α_tmp, ρ_lo * α_2) # avoid too big reductions
 
         # Update objective function values
-        @. x= x_prev + α_2 * p
-        f_tmp, f_new= f_new, f(x, args.f...)
+        x.= x_prev .+ α_2 .* p
+        f_tmp, f_new= f_new, f(x)
 
         # Update iteration counter
         iter+= 1
@@ -225,7 +222,7 @@ function cubic_interp!(ls::BackTrack, x::AbstractVector, x_prev::AbstractVector,
 end
 
 """
-    backtrack!(ls, x, x_prev, p, f_prev, ∇f_prev, f, args)
+    backtrack!(ls, x, x_prev, p, f_prev, ∇f_prev, f)
 
 Backtracking line search to find optimal step size ``α``, storing the result in
 `x`.
@@ -237,7 +234,6 @@ Backtracking line search to find optimal step size ``α``, storing the result in
   - `f_prev::Real`              : previous objective function value
   - `∇f_prev::AbstractVector`   : previous gradient
   - `f::Function`               : ``f(x)``
-  - `args::NamedTuple`          : arguments for `f`
 
 #### Returns
   - `x::AbstractVector` : updated state
@@ -245,17 +241,17 @@ Backtracking line search to find optimal step size ``α``, storing the result in
 """
 function backtrack!(ls::BackTrack, x::AbstractVector, x_prev::AbstractVector, 
                     p::AbstractVector, f_prev::Real, ∇f_prev::AbstractVector, 
-                    f::Function, args::NamedTuple)
+                    f::Function)
     # Check interpolation
     if ls.order == 0
         # Fixed backtracking
-        f_new= fixed!(ls, x, x_prev, p, f_prev, ∇f_prev, f, args)
+        f_new= fixed!(ls, x, x_prev, p, f_prev, ∇f_prev, f)
     elseif ls.order == 2
         # Quadratic interpolation
-        f_new= quad_interp!(ls, x, x_prev, p, f_prev, ∇f_prev, f, args)
+        f_new= quad_interp!(ls, x, x_prev, p, f_prev, ∇f_prev, f)
     elseif ls.order == 3
         # Cubic interpolation
-        f_new= cubic_interp!(ls, x, x_prev, p, f_prev, ∇f_prev, f, args)
+        f_new= cubic_interp!(ls, x, x_prev, p, f_prev, ∇f_prev, f)
     end
 
     return f_new
