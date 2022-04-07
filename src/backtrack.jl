@@ -182,7 +182,7 @@ function cubic_interp!(ls::BackTrack, x::AbstractVector, x_prev::AbstractVector,
             # Quadratic interpolation using f(x), ∇f(x)'p, and f(x + α_2 * p)
             α_tmp= -d * α_2^2 * inv(2 * (f_new - f_prev - d * α_2))
         else
-            # Cubic interpolation using f(x), ∇f(x), f(x + α_1 * p), and f(x + α_2 * p)
+            # Cubic interpolation using f(x), ∇f(x)'p, f(x + α_1 * p), and f(x + α_2 * p)
             div= inv(α_1^2 * α_2^2 * (α_2 - α_1))
             tmp_2= f_new - f_prev - d * α_2
             tmp_1= f_tmp - f_prev - d * α_1
@@ -194,7 +194,7 @@ function cubic_interp!(ls::BackTrack, x::AbstractVector, x_prev::AbstractVector,
                 α_tmp= -d * inv(2 * b)
             else
                 # discriminant
-                D= b^2 - 3 * a * d
+                D= max(b^2 - 3 * a * d, Tα(0))
                 # quadratic equation root
                 α_tmp= (-b + sqrt(D)) * inv(3 * a)
             end
