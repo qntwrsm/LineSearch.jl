@@ -115,8 +115,8 @@ function quad_interp!(ls::BackTrack, x::AbstractVector, x_prev::AbstractVector,
     iter= 1
     # Backtracking
     while f_new > f_prev + c_1 * α_1 * d && iter < max_iter
-        # Quadratic interpolation using f(x), ∇f(x), and f(x + α_1 * p)
-        α_tmp= - ∇f_prev * α_1^2 * inv(2 * (f_new - f_prev - ∇f_prev * α_1))
+        # Quadratic interpolation using f(x), ∇f(x)'p, and f(x + α_1 * p)
+        α_tmp= -d * α_1^2 * inv(2 * (f_new - f_prev - d * α_1))
 
         # Safeguard
         α_tmp= min(α_tmp, ρ_hi * α_1)   # avoid too small reductions
@@ -179,22 +179,22 @@ function cubic_interp!(ls::BackTrack, x::AbstractVector, x_prev::AbstractVector,
     # Backtracking
     while f_new > f_prev + c_1 * α_2 * d && iter < max_iter
         if iter == 1
-            # Quadratic interpolation using f(x), ∇f(x), and f(x + α_2 * p)
-            α_tmp= - ∇f_prev * α_2^2 * inv(2 * (f_new - f_prev - ∇f_prev * α_2))
+            # Quadratic interpolation using f(x), ∇f(x)'p, and f(x + α_2 * p)
+            α_tmp= -d * α_2^2 * inv(2 * (f_new - f_prev - d * α_2))
         else
             # Cubic interpolation using f(x), ∇f(x), f(x + α_1 * p), and f(x + α_2 * p)
             div= inv(α_1^2 * α_2^2 * (α_2 - α_1))
-            tmp_2= f_new - f_prev - ∇f_prev * α_2
-            tmp_1= f_tmp - f_prev - ∇f_prev * α_1
+            tmp_2= f_new - f_prev - d * α_2
+            tmp_1= f_tmp - f_prev - d * α_1
             a= (α_1^2 * tmp_2  - α_2^2 * tmp_1) * div
             b= (-α_1^3 * tmp_2  + α_2^3 * tmp_1) * div
 
             if isapprox(a, zero(a), atol=eps(Tα))
                 # approximate quadratic interpolation
-                α_tmp= - ∇f_prev * inv(2 * b)
+                α_tmp= -d * inv(2 * b)
             else
                 # discriminant
-                D= b^2 - 3 * a * ∇f_prev
+                D= b^2 - 3 * a * d
                 # quadratic equation root
                 α_tmp= (-b + sqrt(D)) * inv(3 * a)
             end
