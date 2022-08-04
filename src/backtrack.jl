@@ -14,12 +14,12 @@ backtrack.jl
 Base.@kwdef mutable struct BackTrack{Tf, Gf, Ti}
     α::Tf	            # stepsize
 	α_init::Tf 	        # initial stepsize
-    ρ::Gf = .5		    # contraction factor
-    c_1::Tf = 1e-4      # sufficient decrease constant
-    order::Ti = 0       # interpolation order
-    ρ_hi::Gf = .5       # safeguard upper bound
-    ρ_lo::Gf = .1       # safeguard lower bound
-    max_iter::Ti = 1000 # max iterations
+    ρ::Gf=.5            # contraction factor
+    c_1::Tf=1e-4        # sufficient decrease constant
+    order::Ti=0         # interpolation order
+    ρ_hi::Gf=.5         # safeguard upper bound
+    ρ_lo::Gf=.1         # safeguard lower bound
+    max_iter::Ti=1000   # max iterations
 end
 
 """
@@ -40,9 +40,15 @@ storing the result in `x`.
   - `x::AbstractVector` : updated state
   - `f_new::Real`       : objective function value
 """
-function fixed!(ls::BackTrack, x::AbstractVector, x_prev::AbstractVector, 
-                p::AbstractVector, f_prev::Real, ∇f_prev::AbstractVector, 
-                f::Function)
+function fixed!(
+    ls::BackTrack, 
+    x::AbstractVector, 
+    x_prev::AbstractVector, 
+    p::AbstractVector, 
+    f_prev::Real, 
+    ∇f_prev::AbstractVector, 
+    f::Function
+)
     # Unpack
     α= ls.α_init
     c_1= ls.c_1
@@ -95,9 +101,15 @@ the result in `x`.
   - `x::AbstractVector` : updated state
   - `f_new::Real`       : objective function value
 """
-function quad_interp!(ls::BackTrack, x::AbstractVector, x_prev::AbstractVector, 
-                        p::AbstractVector, f_prev::Real, ∇f_prev::AbstractVector, 
-                        f::Function)
+function quad_interp!(
+    ls::BackTrack, 
+    x::AbstractVector, 
+    x_prev::AbstractVector, 
+    p::AbstractVector, 
+    f_prev::Real, 
+    ∇f_prev::AbstractVector, 
+    f::Function
+)
     # Unpack
     α_1= ls.α_init
     c_1= ls.c_1
@@ -154,9 +166,15 @@ result in `x`.
   - `x::AbstractVector` : updated state
   - `f_new::Real`       : objective function value
 """
-function cubic_interp!(ls::BackTrack, x::AbstractVector, x_prev::AbstractVector, 
-                        p::AbstractVector, f_prev::Real, ∇f_prev::AbstractVector, 
-                        f::Function)
+function cubic_interp!(
+    ls::BackTrack,
+    x::AbstractVector, 
+    x_prev::AbstractVector, 
+    p::AbstractVector, 
+    f_prev::Real, 
+    ∇f_prev::AbstractVector, 
+    f::Function
+)
     # Infer type
     Tα= typeof(ls.α_init)
 
@@ -239,9 +257,15 @@ Backtracking line search to find optimal step size ``α``, storing the result in
   - `x::AbstractVector` : updated state
   - `f_new::Real`       : objective function value
 """
-function backtrack!(ls::BackTrack, x::AbstractVector, x_prev::AbstractVector, 
-                    p::AbstractVector, f_prev::Real, ∇f_prev::AbstractVector, 
-                    f::Function)
+function backtrack!(
+    ls::BackTrack, 
+    x::AbstractVector, 
+    x_prev::AbstractVector, 
+    p::AbstractVector, 
+    f_prev::Real, 
+    ∇f_prev::AbstractVector, 
+    f::Function
+)
     # Check interpolation
     if ls.order == 0
         # Fixed backtracking
